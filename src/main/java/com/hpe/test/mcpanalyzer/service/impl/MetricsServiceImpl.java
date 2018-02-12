@@ -71,8 +71,8 @@ public class MetricsServiceImpl implements MetricsService {
 		
 		Map<Call.Status, Long> callStatus = messagesByType.get(Message.Type.CALL).stream()
 				.collect(Collectors.groupingBy( c -> ((Call)c).getStatusCode(), Collectors.counting()));
-		Long okCalls = callStatus.get(Call.Status.OK)==null?0:callStatus.get(Call.Status.OK);
-		Long koCalls = callStatus.get(Call.Status.KO)==null?0:callStatus.get(Call.Status.KO);
+		Long okCalls = callStatus.get(Call.Status.OK)==null?0L:callStatus.get(Call.Status.OK);
+		Long koCalls = callStatus.get(Call.Status.KO)==null?0L:callStatus.get(Call.Status.KO);
 		result.setPercentageOKCalls(BigDecimal.valueOf((okCalls.floatValue() / (okCalls + koCalls))*100));
 		
 		List<DestinationCalls> callsByCountry = messagesByType.get(Message.Type.CALL).stream()
