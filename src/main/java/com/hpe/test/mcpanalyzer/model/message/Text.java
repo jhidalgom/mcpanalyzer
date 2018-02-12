@@ -2,6 +2,13 @@ package com.hpe.test.mcpanalyzer.model.message;
 
 import java.util.EnumSet;
 
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "text")
 public class Text extends Message {
 	
 	public enum Status {
@@ -29,6 +36,7 @@ public class Text extends Message {
 	}
 	
 	private String messageContent;
+	@Enumerated(EnumType.STRING)
 	private Status messageStatus;
 	
 	public String getMessageContent() {

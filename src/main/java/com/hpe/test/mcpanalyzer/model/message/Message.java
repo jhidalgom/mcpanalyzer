@@ -3,9 +3,25 @@ package com.hpe.test.mcpanalyzer.model.message;
 import java.math.BigInteger;
 import java.util.EnumSet;
 
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.hpe.test.mcpanalyzer.mapper.MessageTypeDeserializer;
+import com.hpe.test.mcpanalyzer.model.processor.ProcessedFile;
 
+@Entity
+@Table(name = "message")
+@Inheritance(strategy = InheritanceType.JOINED)
 public abstract class Message {
 	
 	@JsonDeserialize(using = MessageTypeDeserializer.class)
@@ -33,10 +49,19 @@ public abstract class Message {
 		}
 	}
 	
+	@Id
+	@GeneratedValue(strategy=GenerationType.AUTO)
+	private BigInteger id;
+	
+	@Enumerated(EnumType.STRING)
 	private Type type;
 	private BigInteger timestamp;
 	private String origin;
 	private String destination;
+	
+	@ManyToOne(targetEntity = ProcessedFile.class)
+	@JoinColumn(name = "processed_file_id")
+	private ProcessedFile processedFile;
 	
 	public Message () {
 		
@@ -72,6 +97,12 @@ public abstract class Message {
 	}
 	public void setDestination(String destination) {
 		this.destination = destination;
+	}
+	public ProcessedFile getProcessedFile() {
+		return processedFile;
+	}
+	public void setProcessedFile(ProcessedFile processedFile) {
+		this.processedFile = processedFile;
 	}
 	
 }

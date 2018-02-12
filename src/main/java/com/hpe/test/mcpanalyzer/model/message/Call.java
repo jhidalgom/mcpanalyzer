@@ -3,6 +3,13 @@ package com.hpe.test.mcpanalyzer.model.message;
 import java.math.BigInteger;
 import java.util.EnumSet;
 
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "call")
 public class Call extends Message {
 	
 	public enum Status {
@@ -30,6 +37,7 @@ public class Call extends Message {
 	}
 	
 	private BigInteger duration;
+	@Enumerated(EnumType.STRING)
 	private Status statusCode;
 	private String statusDescription;
 	
