@@ -37,6 +37,7 @@ public class AnalyzerController {
 		}
 		
 		try {
+			log.info("Attempting to process file ({})", requestedDate);
 			success = processFileService.processFile(requestedDate);
 		} catch (FileNotFoundException fnf) {
 			return new ResponseEntity<AnalyzerResponse>(new AnalyzerResponse("KO","File not found"),HttpStatus.NOT_FOUND);

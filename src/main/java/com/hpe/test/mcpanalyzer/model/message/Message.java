@@ -3,8 +3,12 @@ package com.hpe.test.mcpanalyzer.model.message;
 import java.math.BigInteger;
 import java.util.EnumSet;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.hpe.test.mcpanalyzer.mapper.MessageTypeDeserializer;
+
 public abstract class Message {
 	
+	@JsonDeserialize(using = MessageTypeDeserializer.class)
 	public enum Type {
 		
 		CALL("CALL"),
