@@ -12,5 +12,8 @@ public interface ProcessedFileRepository extends CrudRepository<ProcessedFile, L
 	
 	@Transactional
 	ProcessedFile findOneByFileDate(String fileDate);
-
+	
+	@Transactional
+    void deleteByFileDate(String fileDate);
+	
 }

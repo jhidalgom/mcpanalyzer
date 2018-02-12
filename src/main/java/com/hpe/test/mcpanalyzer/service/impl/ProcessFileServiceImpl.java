@@ -33,7 +33,7 @@ public class ProcessFileServiceImpl implements ProcessFileService {
 	private ProcessedFileRepository processedFileRepository;
 
 	@Override
-	public boolean processFile(String requestedDate) throws FileNotFoundException {
+	public boolean processFile(String requestedDate, boolean replaceExisting) throws FileNotFoundException {
 		
 		ProcessedFile processedFile = new ProcessedFile();
 		int rowsWithMissingFields = 0;
@@ -95,6 +95,10 @@ public class ProcessFileServiceImpl implements ProcessFileService {
 		processedFile.setRowsWithFieldErrors(rowsWithFieldErrors);
 		processedFile.setRowsWithMissingFields(rowsWithMissingFields);
 		processedFile.setProcessDuration(BigInteger.valueOf(processTime));
+		
+		if(replaceExisting) {
+			processedFileRepository.deleteByFileDate(requestedDate);
+		}
 		
 		try {
 			processedFileRepository.save(processedFile);

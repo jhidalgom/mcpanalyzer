@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.hpe.test.mcpanalyzer.service.ProcessFileService;
@@ -27,7 +28,7 @@ public class AnalyzerController {
 	private ProcessFileService processFileService;
 	
 	@RequestMapping(value="/{date}", method=RequestMethod.POST, produces=MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<AnalyzerResponse> processFile(@PathVariable("date") String requestedDate) {
+	public ResponseEntity<AnalyzerResponse> processFile(@PathVariable("date") String requestedDate, @RequestParam(value="replace", required=false, defaultValue="false") boolean replaceExisting) {
 		
 		boolean success = false;
 		
@@ -38,13 +39,13 @@ public class AnalyzerController {
 		
 		try {
 			log.info("Attempting to process file ({})", requestedDate);
-			success = processFileService.processFile(requestedDate);
+			success = processFileService.processFile(requestedDate, replaceExisting);
 		} catch (FileNotFoundException fnf) {
 			return new ResponseEntity<AnalyzerResponse>(new AnalyzerResponse("KO","File not found"),HttpStatus.NOT_FOUND);
 		}
 		
 		if(!success) {
-			return new ResponseEntity<AnalyzerResponse>(new AnalyzerResponse("KO","That file was already processed"),HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<AnalyzerResponse>(new AnalyzerResponse("KO","That file was already processed. Enable reprocessing by sending the parameter 'replace' = true"),HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		
 		log.info("File ({}) processed successfully", requestedDate);
