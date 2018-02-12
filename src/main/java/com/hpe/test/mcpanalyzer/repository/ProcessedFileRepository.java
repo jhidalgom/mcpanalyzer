@@ -2,6 +2,7 @@ package com.hpe.test.mcpanalyzer.repository;
 
 import javax.transaction.Transactional;
 
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -15,5 +16,9 @@ public interface ProcessedFileRepository extends CrudRepository<ProcessedFile, L
 	
 	@Transactional
     void deleteByFileDate(String fileDate);
+	
+	@Transactional
+	@Query("SELECT coalesce(max(pf.id), -1) FROM ProcessedFile pf")
+	Long getMaxId();
 	
 }
