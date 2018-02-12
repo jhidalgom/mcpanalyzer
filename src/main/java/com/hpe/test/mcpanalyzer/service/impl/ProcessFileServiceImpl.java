@@ -2,6 +2,7 @@ package com.hpe.test.mcpanalyzer.service.impl;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.URL;
 import java.util.Scanner;
 
@@ -14,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hpe.test.mcpanalyzer.mapper.MessageMapper;
 import com.hpe.test.mcpanalyzer.model.message.Message;
 import com.hpe.test.mcpanalyzer.model.processor.ProcessLineResult;
+import com.hpe.test.mcpanalyzer.model.processor.ProcessedFile;
 import com.hpe.test.mcpanalyzer.service.ProcessFileService;
 
 @Service("processFileService")
@@ -27,12 +29,15 @@ public class ProcessFileServiceImpl implements ProcessFileService {
 	@Override
 	public boolean processFile(String requestedDate) throws FileNotFoundException {
 		
+		ProcessedFile processedFile = new ProcessedFile();
 		int rowsWithMissingFields = 0;
 		int rowsWithFieldErrors = 0;
 		
 		String httpRequestUrl = jsonFileUrl.replace("YYYYMMDD", requestedDate);
 		Scanner s = null;
 		String line = null;
+		
+		Long startTime = System.currentTimeMillis();
 		
 		try {
 			URL url = new URL(httpRequestUrl);
@@ -67,14 +72,21 @@ public class ProcessFileServiceImpl implements ProcessFileService {
 				}
 			}
 			
-			log.info("File process completed: Rows with missing fields: {}  --- Rows with field errors: {}", rowsWithMissingFields, rowsWithFieldErrors);
-			
 		} catch(IOException ex) {
 			log.info("The requested file ({}) was not found on the server or it is inaccessible", requestedDate);
 			throw new FileNotFoundException();
 		} finally {
 			try { s.close(); } catch (Exception e) {}
 		}
+		
+		Long processTime = System.currentTimeMillis() - startTime;
+		
+		log.info("File process completed in {} ms: Rows with missing fields: {}  --- Rows with field errors: {}", processTime, rowsWithMissingFields, rowsWithFieldErrors);
+		
+		processedFile.setFileDate(requestedDate);
+		processedFile.setRowsWithFieldErrors(rowsWithFieldErrors);
+		processedFile.setRowsWithMissingFields(rowsWithMissingFields);
+		processedFile.setProcessDuration(BigInteger.valueOf(processTime));
 		
 		return true;
 	}
