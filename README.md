@@ -1,4 +1,7 @@
 # mcpanalyzer
+In order to run it...
+
+`mvn spring-boot:run`
 
 The base context (/) with a YYYYMMDD parameter will process the selected file, given that it is found on the server.
 I've taken the liberty of adding an optional 'replace' POST parameter that, when set to true, allows to reprocess a file just in case someone feels bad about having uploaded json objects with formatting errors and they wanted to fix them ;)
