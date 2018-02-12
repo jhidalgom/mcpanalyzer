@@ -8,7 +8,9 @@ import java.util.Scanner;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,6 +18,7 @@ import com.hpe.test.mcpanalyzer.mapper.MessageMapper;
 import com.hpe.test.mcpanalyzer.model.message.Message;
 import com.hpe.test.mcpanalyzer.model.processor.ProcessLineResult;
 import com.hpe.test.mcpanalyzer.model.processor.ProcessedFile;
+import com.hpe.test.mcpanalyzer.repository.ProcessedFileRepository;
 import com.hpe.test.mcpanalyzer.service.ProcessFileService;
 
 @Service("processFileService")
@@ -25,6 +28,9 @@ public class ProcessFileServiceImpl implements ProcessFileService {
 	
 	@Value("${JSON_FILE_URL}")
 	private String jsonFileUrl;
+	
+	@Autowired
+	private ProcessedFileRepository processedFileRepository;
 
 	@Override
 	public boolean processFile(String requestedDate) throws FileNotFoundException {
@@ -63,6 +69,8 @@ public class ProcessFileServiceImpl implements ProcessFileService {
 						if(!procLineResult.hasFieldErrors() && !procLineResult.hasMissingFields()) {
 							Message resultObject = procLineResult.getResultObject();
 							log.info("Successfully mapped object << {} >>", resultObject);
+							resultObject.setProcessedFile(processedFile);
+							processedFile.addMessageToList(resultObject);
 						}
 					}
 					
@@ -87,6 +95,12 @@ public class ProcessFileServiceImpl implements ProcessFileService {
 		processedFile.setRowsWithFieldErrors(rowsWithFieldErrors);
 		processedFile.setRowsWithMissingFields(rowsWithMissingFields);
 		processedFile.setProcessDuration(BigInteger.valueOf(processTime));
+		
+		try {
+			processedFileRepository.save(processedFile);
+		} catch (DataIntegrityViolationException e) {
+			return false;
+		}
 		
 		return true;
 	}

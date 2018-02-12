@@ -1,6 +1,7 @@
 package com.hpe.test.mcpanalyzer.model.processor;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -34,6 +35,7 @@ public class ProcessedFile {
 	public ProcessedFile() {
 		this.rowsWithFieldErrors = 0;
 		this.rowsWithMissingFields = 0;
+		this.messageList = new ArrayList<>();
 	}
 	
 	public String getFileDate() {
