@@ -3,6 +3,7 @@ package com.hpe.test.mcpanalyzer.service.impl;
 import java.io.FileNotFoundException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -16,7 +17,10 @@ import com.hpe.test.mcpanalyzer.model.message.Call;
 import com.hpe.test.mcpanalyzer.model.message.Message;
 import com.hpe.test.mcpanalyzer.model.message.Text;
 import com.hpe.test.mcpanalyzer.model.metrics.CallDuration;
+import com.hpe.test.mcpanalyzer.model.metrics.Destination;
+import com.hpe.test.mcpanalyzer.model.metrics.DestinationCalls;
 import com.hpe.test.mcpanalyzer.model.metrics.MetricsResult;
+import com.hpe.test.mcpanalyzer.model.metrics.WordOccurrence;
 import com.hpe.test.mcpanalyzer.model.processor.ProcessedFile;
 import com.hpe.test.mcpanalyzer.repository.ProcessedFileRepository;
 import com.hpe.test.mcpanalyzer.service.MetricsService;
@@ -70,6 +74,29 @@ public class MetricsServiceImpl implements MetricsService {
 		Long okCalls = callStatus.get(Call.Status.OK)==null?0:callStatus.get(Call.Status.OK);
 		Long koCalls = callStatus.get(Call.Status.KO)==null?0:callStatus.get(Call.Status.KO);
 		result.setPercentageOKCalls(BigDecimal.valueOf((okCalls.floatValue() / (okCalls + koCalls))*100));
+		
+		List<DestinationCalls> callsByCountry = messagesByType.get(Message.Type.CALL).stream()
+				.collect(Collectors.groupingBy(c -> c.getOrigin().substring(0, 2), Collectors.toList()))
+				.entrySet().stream()
+				.collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue().stream()
+						.collect(Collectors.groupingBy(m -> m.getDestination(), Collectors.counting()))
+						.entrySet().stream().map(f -> new Destination(f.getKey(), BigInteger.valueOf(f.getValue())))
+						.collect(Collectors.toList())))
+				.entrySet().stream()
+				.map(g -> new DestinationCalls(g.getKey(), g.getValue()))
+				.collect(Collectors.toList());
+		result.setCallDestinationsByCountry(callsByCountry);
+		
+		List<WordOccurrence> occurrences = messagesByType.get(Message.Type.MESSAGE).stream()
+				.map(m -> Arrays.asList(((Text)m).getMessageContent().split(" ")))
+				.flatMap(List::stream)
+				.filter(w -> !StringUtils.isEmpty(w))
+				.collect(Collectors.groupingBy(s -> s.toUpperCase(), Collectors.counting()))
+				.entrySet().stream()
+				.sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue()))
+				.map(e -> new WordOccurrence(e.getKey(), BigInteger.valueOf(e.getValue())))
+				.collect(Collectors.toList());
+		result.setWordOccurenceRanking(occurrences);
 		
 		return result;
 	}
